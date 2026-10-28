@@ -1,0 +1,3 @@
+# keep reports directory in git but ignore generated reports
+*
+!.gitkeep
