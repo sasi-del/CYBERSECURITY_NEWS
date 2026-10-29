@@ -127,17 +127,4 @@ systemctl start cyberbulletin
 | `/api/data` | JSON API for downstream integrations |
 | Auto-refresh | Page refreshes every 5 minutes |
 
----
-
-## Intern Morning SOP
-
-| Time | Task |
-|------|------|
-| 08:00 AM | Open `http://server:8080`, review top threats |
-| 08:15 AM | Fill in Organisational Impact for each story |
-| 08:30 AM | Share draft with senior for 5-min sign-off |
-| 08:45 AM | Post `_slack.txt` to company channel |
-
----
-
 *Built for internal use — sasi-del/CYBERSECURITY_NEWS*
