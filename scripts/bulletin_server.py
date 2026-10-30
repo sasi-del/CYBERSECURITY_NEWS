@@ -130,281 +130,302 @@ def severity_counts(items):
     return counts
 
 # ---------------------------------------------------------------------------
-# HTML Template (single-file, no external dependencies)
+# HTML Template — "The Cyber Ledger" newspaper aesthetic
 # ---------------------------------------------------------------------------
-HTML = r"""<!DOCTYPE html>
+HTML = r"""{% macro sev_svg(sev, uid) %}<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150" aria-hidden="true" style="display:block;width:100%">
+  <defs><pattern id="dp{{uid}}" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.4" fill="#222" opacity=".28"/></pattern></defs>
+  <rect width="300" height="150" fill="#d8d5cc"/>
+  {% if sev == 'critical' %}<path d="M150 30L228 135H72z" fill="#222"/><rect x="146" y="68" width="8" height="35" fill="#d8d5cc"/><circle cx="150" cy="118" r="6" fill="#d8d5cc"/>
+  {% elif sev == 'high' %}<rect x="108" y="73" width="84" height="58" fill="#222"/><path d="M123 73V55a27 27 0 0 1 54 0v10" fill="none" stroke="#222" stroke-width="14"/><circle cx="150" cy="96" r="9" fill="#d8d5cc"/><rect x="145" y="96" width="10" height="20" fill="#d8d5cc"/>
+  {% elif sev == 'medium' %}<circle cx="150" cy="75" r="48" fill="none" stroke="#222" stroke-width="9"/><circle cx="150" cy="75" r="17" fill="#222"/><path d="M150 14v26M150 110v26M89 75h26M185 75h26" stroke="#222" stroke-width="9"/>
+  {% else %}<path d="M150 25L218 62v48c0 38-68 58-68 58s-68-20-68-58V62z" fill="#222"/>{% endif %}
+  <rect width="300" height="150" fill="url(#dp{{uid}})"/>
+</svg>{% endmacro %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🛡️ Cyber Intelligence Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Cyber Ledger — Internal Bulletin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;
-  --accent:#58a6ff;--green:#3fb950;--yellow:#d29922;--orange:#f0883e;--red:#f85149;--purple:#bc8cff}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6}
+:root{--bg:#fbfaf7;--ink:#121212;--mute:#5a5a5a;--rule:#121212;--hair:#c9c6bd;--panel:#f1eee6;--red:#a4161a;--amber:#b86e00;--blue:#1d4e89;
+--blackletter:"UnifrakturMaguntia","Old English Text MT","Engravers Old English",Georgia,"Times New Roman",serif;
+--serif:"Times New Roman",Times,"Liberation Serif",Georgia,serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17160f;--ink:#efece2;--mute:#a9a597;--rule:#efece2;--hair:#3b3a30;--panel:#211f17;--red:#ff6b6b;--amber:#f0a73a;--blue:#7fb2f0}}
+:root[data-theme="dark"]{--bg:#17160f;--ink:#efece2;--mute:#a9a597;--rule:#efece2;--hair:#3b3a30;--panel:#211f17;--red:#ff6b6b;--amber:#f0a73a;--blue:#7fb2f0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.5}
 
-/* HEADER */
-.header{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid var(--border);
-  padding:16px 28px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100}
-.header-left{display:flex;align-items:center;gap:14px}
-.logo{font-size:28px}
-.header-title{font-size:18px;font-weight:700;color:#fff}
-.header-sub{font-size:12px;color:var(--muted)}
-.live-badge{display:flex;align-items:center;gap:6px;background:rgba(63,185,80,.12);
-  border:1px solid rgba(63,185,80,.3);border-radius:20px;padding:4px 14px;
-  font-size:12px;color:var(--green);font-weight:600}
-.pulse{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
-
-/* LAYOUT */
-.main{padding:24px 28px;max-width:1600px;margin:0 auto}
-
-/* STAT CARDS */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:24px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
-  padding:18px 20px;position:relative;overflow:hidden;transition:transform .15s}
-.stat-card:hover{transform:translateY(-2px)}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.stat-card.total::before{background:var(--accent)}
-.stat-card.critical::before{background:var(--red)}
-.stat-card.high::before{background:var(--orange)}
-.stat-card.medium::before{background:var(--yellow)}
-.stat-card.low::before{background:var(--green)}
-.stat-value{font-size:34px;font-weight:800;letter-spacing:-1px}
-.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
-.stat-card.total .stat-value{color:var(--accent)}
-.stat-card.critical .stat-value{color:var(--red)}
-.stat-card.high .stat-value{color:var(--orange)}
-.stat-card.medium .stat-value{color:var(--yellow)}
-.stat-card.low .stat-value{color:var(--green)}
-
-/* GRID */
-.grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
-@media(max-width:1100px){.grid{grid-template-columns:1fr}}
-
-/* SECTION TITLE */
-.section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.section-title .cnt{background:var(--border);color:var(--text);border-radius:10px;
-  padding:1px 8px;font-size:11px;font-weight:600}
-
-/* FILTER BAR */
-.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.filter-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;
-  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
-.filter-btn:hover{border-color:var(--accent);color:var(--accent)}
-.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
-.search-input{background:var(--card);border:1px solid var(--border);border-radius:20px;
-  color:var(--text);padding:5px 14px;font-size:12px;outline:none;margin-left:auto;
-  width:220px;transition:border-color .15s}
-.search-input:focus{border-color:var(--accent)}
-
-/* ARTICLE CARDS */
-.articles{display:flex;flex-direction:column;gap:12px}
-.article-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
-  padding:16px 18px;transition:border-color .15s,transform .15s;position:relative;overflow:hidden}
-.article-card:hover{border-color:var(--accent);transform:translateX(3px)}
-.sev-bar{position:absolute;left:0;top:0;bottom:0;width:4px}
-.sev-bar.critical{background:var(--red)}
-.sev-bar.high{background:var(--orange)}
-.sev-bar.medium{background:var(--yellow)}
-.sev-bar.low{background:var(--green)}
-.article-inner{padding-left:12px}
-.article-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.rank{font-size:11px;color:var(--muted);font-weight:700;min-width:24px;margin-top:2px}
-.article-title{font-size:14px;font-weight:600;color:#e6edf3;text-decoration:none;line-height:1.4;flex:1}
-.article-title:hover{color:var(--accent)}
-.article-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
-.source-badge{font-size:11px;background:rgba(88,166,255,.12);color:var(--accent);
-  border:1px solid rgba(88,166,255,.25);border-radius:4px;padding:1px 7px;font-weight:600}
-.time-badge{font-size:11px;color:var(--muted)}
-.sev-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-radius:4px;padding:1px 6px}
-.sev-badge.critical{background:rgba(248,81,73,.18);color:var(--red);border:1px solid rgba(248,81,73,.3)}
-.sev-badge.high{background:rgba(240,136,62,.18);color:var(--orange);border:1px solid rgba(240,136,62,.3)}
-.sev-badge.medium{background:rgba(210,153,34,.18);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
-.sev-badge.low{background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.2)}
-.cluster-count{font-size:10px;background:rgba(88,166,255,.12);color:var(--accent);
-  border-radius:10px;padding:1px 7px;font-weight:600}
-.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.tag{font-size:10px;background:rgba(188,140,255,.1);color:var(--purple);
-  border:1px solid rgba(188,140,255,.2);border-radius:3px;padding:0 5px}
-.cluster-list{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
-  display:flex;flex-direction:column;gap:4px}
-.cluster-item{font-size:12px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px}
-.cluster-item:hover{color:var(--text)}
-.cluster-item::before{content:'↳';color:var(--border)}
-
-/* SIDEBAR */
-.sidebar{display:flex;flex-direction:column;gap:20px}
-.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px}
-
-/* AI Summary */
-.ai-label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--accent);
-  font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-.ai-summary{background:rgba(88,166,255,.05);border:1px solid rgba(88,166,255,.2);
-  border-radius:8px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap}
-
-/* Timeline */
-.timeline{display:flex;flex-direction:column;gap:10px}
-.tl-item{display:flex;gap:10px;align-items:flex-start}
-.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
-.tl-dot.critical{background:var(--red);box-shadow:0 0 6px var(--red)}
-.tl-dot.high{background:var(--orange)}
-.tl-dot.medium{background:var(--yellow)}
-.tl-dot.low{background:var(--green)}
-.tl-text{font-size:12px;line-height:1.5}
-.tl-title{color:var(--text)}
-.tl-time{color:var(--muted);font-size:11px}
-
-/* Source bars */
-.source-bars{display:flex;flex-direction:column;gap:10px}
-.source-row{display:flex;flex-direction:column;gap:4px}
-.source-label-row{display:flex;justify-content:space-between;font-size:12px}
-.source-name{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
-.source-num{color:var(--muted);font-weight:700}
-.bar-track{background:var(--border);border-radius:4px;height:6px;overflow:hidden}
-.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));
-  border-radius:4px;transition:width .6s ease}
-
-/* Footer */
-.footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;
-  border-top:1px solid var(--border);margin-top:30px}
-.footer a{color:var(--accent)}
-
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 40px}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;padding:10px 0;border-bottom:1px solid var(--hair);color:var(--mute)}
+.top b{color:var(--ink)}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--red);font-weight:700;font-style:italic}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}.tick span{animation:none!important}}
+.mast{text-align:center;padding:14px 0 8px;border-bottom:3px double var(--rule)}
+.mast h1{font-family:var(--blackletter);font-weight:400;font-size:clamp(44px,9vw,92px);line-height:1;margin:0;letter-spacing:.5px}
+.mast p{margin:6px 0 0;font-style:italic;color:var(--mute);font-size:15px}
+.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 22px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.nav button{background:none;border:0;border-bottom:2px solid transparent;font:inherit;font-size:16px;color:var(--ink);padding:4px 2px;cursor:pointer}
+.nav button:hover{color:var(--red)}
+.nav button[aria-pressed="true"]{border-color:var(--ink);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tick{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--hair);padding:7px 0;overflow:hidden;font-size:15px}
+.tick .tag{flex:none;background:var(--red);color:#fff;font-weight:700;padding:1px 9px;font-style:italic}
+.tick .run{overflow:hidden;white-space:nowrap;flex:1}
+.tick span{display:inline-block;padding-left:100%;animation:run 60s linear infinite}
+@keyframes run{to{transform:translateX(-100%)}}
+.tools{display:flex;gap:10px;flex-wrap:wrap;padding:12px 0;align-items:center}
+.tools input[type=search]{flex:1;min-width:180px}
+input,select,textarea{font:inherit;font-size:16px;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:6px 9px;border-radius:0}
+.btn{font:inherit;font-size:16px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:6px 14px;cursor:pointer}
+.btn.alt{background:none;color:var(--ink)}
+.paper{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.15fr);gap:0 26px}
+.main{padding-right:26px;border-right:1px solid var(--hair)}
+.kick{font-size:13px;font-weight:700;color:var(--red);letter-spacing:.02em;margin-bottom:2px}
+.story h2,.story h3{margin:2px 0 6px;font-weight:700;line-height:1.12}
+.lead h2{font-size:clamp(30px,4.6vw,46px)}
+.story h3{font-size:22px}
+.meta{font-size:13px;color:var(--mute);font-style:italic;margin-bottom:6px}
+.story p{margin:0 0 8px;font-size:17px}
+.why{font-size:15px;border-left:3px solid var(--rule);padding-left:10px;margin-top:8px;color:var(--mute)}
+.sev{display:inline-block;font-size:11px;font-weight:700;padding:0 6px;border:1px solid currentColor;margin-left:6px;font-style:normal;letter-spacing:.03em}
+.sev.critical{color:var(--red)}.sev.high{color:var(--amber)}.sev.medium{color:var(--blue)}.sev.low{color:var(--mute)}
+.lead{padding:6px 0 18px;border-bottom:1px solid var(--rule);margin-bottom:16px}
+.lead-thumb{display:block;width:100%;aspect-ratio:16/7;background:var(--panel);border:1px solid var(--hair);margin:0 0 10px;overflow:hidden}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.cols .story{padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--hair)}
+.empty{padding:30px 0;color:var(--mute);font-style:italic}
+aside h4{font-size:15px;margin:0 0 8px;padding-bottom:4px;border-bottom:2px solid var(--rule);font-weight:700}
+.box{margin-bottom:22px}
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}
+.nums div{background:var(--panel);padding:8px 4px}
+.nums b{display:block;font-size:26px;line-height:1}
+.nums small{font-size:12px;color:var(--mute)}
+.list{margin:0;padding-left:18px;font-size:16px}
+.list li{margin-bottom:6px}
+.samp{font-size:12px;background:var(--panel);padding:0 6px;margin-left:6px;font-style:normal;color:var(--mute)}
+.tag-chip{font-size:11px;background:var(--panel);color:var(--mute);border:1px solid var(--hair);padding:0 5px;display:inline-block;margin:2px 2px 0 0;font-style:normal}
+.tags-row{margin-top:6px}
+.cluster-sub{margin-top:8px;padding-top:8px;border-top:1px solid var(--hair);font-size:13px}
+.cluster-sub a{color:var(--mute);text-decoration:none;display:block;margin-bottom:3px}
+.cluster-sub a:hover{color:var(--ink)}
+.cluster-sub a::before{content:'↳ '}
+.source-row{margin-bottom:10px}
+.source-lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.source-name{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px}
+.source-num{color:var(--mute);font-weight:700;font-size:12px}
+.bar-track{background:var(--hair);height:5px}
+.bar-fill{height:100%;background:var(--ink)}
+.ai-box{background:var(--panel);border-left:3px solid var(--rule);padding:10px 12px;font-size:14px;line-height:1.7;white-space:pre-wrap;font-style:italic}
+.foot{border-top:3px double var(--rule);margin-top:20px;padding-top:10px;font-size:13px;color:var(--mute);text-align:center;font-style:italic}
+.foot a{color:var(--mute)}
+@media (max-width:860px){.paper{grid-template-columns:1fr}.main{padding-right:0;border-right:0}.cols{grid-template-columns:1fr}aside{margin-top:20px}}
+@media print{.tools,.tick,.nav button:not([aria-pressed="true"]){display:none}body{font-size:14px}}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="header">
-  <div class="header-left">
-    <div class="logo">🛡️</div>
-    <div>
-      <div class="header-title">Cyber Intelligence Dashboard</div>
-      <div class="header-sub">Internal Security Feed · Updated {{ updated }}</div>
-    </div>
-  </div>
-  <div class="live-badge"><div class="pulse"></div>Live · Auto-refresh 5m</div>
-</div>
-
-<div class="main">
-  <div class="stats">
-    <div class="stat-card total"><div class="stat-value">{{ stats.total }}</div><div class="stat-label">Articles Today</div></div>
-    <div class="stat-card critical"><div class="stat-value">{{ stats.critical }}</div><div class="stat-label">🔴 Critical</div></div>
-    <div class="stat-card high"><div class="stat-value">{{ stats.high }}</div><div class="stat-label">🟠 High</div></div>
-    <div class="stat-card medium"><div class="stat-value">{{ stats.medium }}</div><div class="stat-label">🟡 Medium</div></div>
-    <div class="stat-card low"><div class="stat-value">{{ stats.low }}</div><div class="stat-label">🟢 Low</div></div>
+  <div class="top">
+    <span><b id="date">—</b></span>
+    <span class="live"><i></i>Live · updated {{ updated }}</span>
+    <span>Internal circulation · <b>TLP:AMBER</b> · Edition <span id="ed">—</span></span>
   </div>
 
-  <div class="grid">
-    <div>
-      <div class="section-title">🚨 Top Threats & Advisories <span class="cnt">{{ items|length }}</span></div>
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterSev('all',this)">All</button>
-        <button class="filter-btn" onclick="filterSev('critical',this)">🔴 Critical</button>
-        <button class="filter-btn" onclick="filterSev('high',this)">🟠 High</button>
-        <button class="filter-btn" onclick="filterSev('medium',this)">🟡 Medium</button>
-        <input class="search-input" type="text" placeholder="🔍 Search headlines..." oninput="filterSearch(this.value)">
-      </div>
-      <div class="articles" id="article-list">
-        {% for item in items %}
-        <div class="article-card" data-sev="{{ item.severity }}" data-title="{{ item.article.title|lower }}">
-          <div class="sev-bar {{ item.severity }}"></div>
-          <div class="article-inner">
-            <div class="article-header">
-              <div class="rank">#{{ loop.index }}</div>
-              <a class="article-title" href="{{ item.article.url }}" target="_blank" rel="noopener">{{ item.article.title }}</a>
-            </div>
-            <div class="article-meta">
-              <span class="source-badge">{{ item.article.source }}</span>
-              <span class="sev-badge {{ item.severity }}">{{ item.severity }}</span>
-              <span class="time-badge">{{ item.article.published[:10] if item.article.published else '' }}</span>
-              {% if item.count > 1 %}<span class="cluster-count">+{{ item.count - 1 }} related</span>{% endif %}
-            </div>
-            {% if item.tags %}<div class="tags">{% for tag in item.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>{% endif %}
-            {% if item.cluster %}
-            <div class="cluster-list">
-              {% for sub in item.cluster %}
-              <a class="cluster-item" href="{{ sub.url }}" target="_blank" rel="noopener">{{ sub.title[:90] }}{% if sub.title|length > 90 %}…{% endif %}</a>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
+  <header class="mast">
+    <h1>The Cyber Ledger</h1>
+    <p>"All the threats fit to print" — the company's daily security bulletin</p>
+  </header>
+
+  <nav class="nav" aria-label="Filter by severity">
+    <button type="button" aria-pressed="true" data-sev="all">All ({{ stats.total }})</button>
+    <button type="button" aria-pressed="false" data-sev="critical">Critical ({{ stats.critical }})</button>
+    <button type="button" aria-pressed="false" data-sev="high">High ({{ stats.high }})</button>
+    <button type="button" aria-pressed="false" data-sev="medium">Medium ({{ stats.medium }})</button>
+    <button type="button" aria-pressed="false" data-sev="low">Low ({{ stats.low }})</button>
+  </nav>
+
+  <div class="tick" aria-label="Latest headlines">
+    <span class="tag">LATEST</span>
+    <div class="run"><span>{{ items[:6] | map(attribute='article') | map(attribute='title') | join('   ◆   ') }}</span></div>
+  </div>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search today's dispatches" aria-label="Search dispatches">
+    <select id="sev-sel" aria-label="Filter by severity">
+      <option value="">All severities</option>
+      <option>critical</option>
+      <option>high</option>
+      <option>medium</option>
+      <option>low</option>
+    </select>
+    <button class="btn alt" id="theme" type="button">Light / dark</button>
+    <button class="btn alt" id="print-btn" type="button">Print briefing</button>
+  </div>
+
+  <div class="paper">
+    <main class="main" id="main" aria-live="polite">
+      {% if not items %}
+      <div class="empty">No dispatches available. Run collect_news.py to populate the feed.</div>
+      {% else %}
+
+      {% set lead = items[0] %}
+      <article class="story lead" data-sev="{{ lead.severity }}" data-text="{{ (lead.article.title ~ ' ' ~ (lead.article.summary or '')) | lower }}">
+        <div class="kick">{{ lead.article.source }} <span class="sev {{ lead.severity }}">{{ lead.severity | upper }}</span></div>
+        <h2><a href="{{ lead.article.url }}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">{{ lead.article.title }}</a></h2>
+        <div class="meta">{{ lead.article.published[:10] if lead.article.published else '—' }}</div>
+        <div class="lead-thumb">{{ sev_svg(lead.severity, 0) }}</div>
+        <p>{{ lead.article.summary or '' }}</p>
+        {% if lead.tags %}
+        <div class="why"><b>Relevance: </b>{{ lead.tags | join(' · ') }}</div>
+        {% endif %}
+        {% if lead.cluster %}
+        <div class="cluster-sub">
+          {% for sub in lead.cluster %}<a href="{{ sub.url }}" target="_blank" rel="noopener">{{ sub.title[:100] }}{% if sub.title | length > 100 %}…{% endif %}</a>{% endfor %}
         </div>
+        {% endif %}
+      </article>
+
+      <div class="cols">
+        {% for item in items[1:] %}
+        <article class="story" data-sev="{{ item.severity }}" data-text="{{ (item.article.title ~ ' ' ~ (item.article.summary or '')) | lower }}">
+          <div class="kick">{{ item.article.source }} <span class="sev {{ item.severity }}">{{ item.severity | upper }}</span>{% if item.count > 1 %}<span class="samp">+{{ item.count - 1 }}</span>{% endif %}</div>
+          <h3><a href="{{ item.article.url }}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">{{ item.article.title }}</a></h3>
+          <div class="meta">{{ item.article.published[:10] if item.article.published else '—' }}</div>
+          {% if item.tags %}
+          <div class="tags-row">{% for t in item.tags %}<span class="tag-chip">{{ t }}</span>{% endfor %}</div>
+          {% endif %}
+          {% if item.cluster %}
+          <div class="cluster-sub">
+            {% for sub in item.cluster[:2] %}<a href="{{ sub.url }}" target="_blank" rel="noopener">{{ sub.title[:75] }}{% if sub.title | length > 75 %}…{% endif %}</a>{% endfor %}
+          </div>
+          {% endif %}
+        </article>
         {% endfor %}
       </div>
-    </div>
 
-    <div class="sidebar">
+      {% endif %}
+    </main>
+
+    <aside>
+      <div class="box">
+        <h4>By the numbers</h4>
+        <div class="nums">
+          <div><b>{{ stats.total }}</b><small>articles today</small></div>
+          <div><b style="color:var(--red)">{{ stats.critical }}</b><small>critical</small></div>
+          <div><b style="color:var(--amber)">{{ stats.high }}</b><small>high</small></div>
+          <div><b style="color:var(--blue)">{{ stats.medium }}</b><small>medium</small></div>
+        </div>
+      </div>
+
       {% if ai_summary %}
-      <div class="sidebar-card">
-        <div class="section-title">✨ AI Executive Summary</div>
-        <div class="ai-label">⚡ Gemini AI · {{ updated }}</div>
-        <div class="ai-summary">{{ ai_summary }}</div>
+      <div class="box">
+        <h4>AI Executive Summary</h4>
+        <div class="ai-box">{{ ai_summary }}</div>
       </div>
       {% endif %}
 
-      <div class="sidebar-card">
-        <div class="section-title">🕐 Latest Advisories</div>
-        <div class="timeline">
-          {% for item in items[:8] %}
-          <div class="tl-item">
-            <div class="tl-dot {{ item.severity }}"></div>
-            <div class="tl-text">
-              <div class="tl-title">{{ item.article.title[:70] }}{% if item.article.title|length > 70 %}…{% endif %}</div>
-              <div class="tl-time">{{ item.article.source }} · {{ item.article.published[:10] if item.article.published else '—' }}</div>
-            </div>
+      {% if sources %}
+      <div class="box">
+        <h4>Source breakdown</h4>
+        {% set max_c = sources[0].count %}
+        {% for src in sources[:10] %}
+        <div class="source-row">
+          <div class="source-lbl">
+            <span class="source-name" title="{{ src.source }}">{{ src.source }}</span>
+            <span class="source-num">{{ src.count }}</span>
           </div>
-          {% endfor %}
+          <div class="bar-track"><div class="bar-fill" style="width:{{ (src.count / max_c * 100) | round | int }}%"></div></div>
         </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="box">
+        <h4>Actions for today</h4>
+        <ol class="list">
+          <li>Confirm edge-device patch status with IT.</li>
+          <li>Forward phishing samples to the SOC mailbox.</li>
+          <li>Check client exposure to items marked critical.</li>
+        </ol>
       </div>
 
-      <div class="sidebar-card">
-        <div class="section-title">📡 Source Breakdown</div>
-        <div class="source-bars">
-          {% set max_c = sources[0].count if sources else 1 %}
-          {% for src in sources %}
-          <div class="source-row">
-            <div class="source-label-row">
-              <span class="source-name">{{ src.source }}</span>
-              <span class="source-num">{{ src.count }}</span>
-            </div>
-            <div class="bar-track"><div class="bar-fill" style="width:{{ (src.count / max_c * 100)|round }}%"></div></div>
-          </div>
-          {% endfor %}
-        </div>
+      <div class="box">
+        <h4>Sources the desk monitors</h4>
+        <ul class="list">
+          <li>CERT-In and CISA advisories</li>
+          <li>BleepingComputer &amp; Hacker News</li>
+          <li>CISA KEV catalogue</li>
+          <li>Vendor security bulletins</li>
+        </ul>
       </div>
-    </div>
+
+      <div class="box" style="font-size:13px;color:var(--mute)">
+        <a href="/api/data" class="foot">JSON API</a> · Auto-refreshes every 5 min
+      </div>
+    </aside>
   </div>
-</div>
 
-<div class="footer">
-  🛡️ Internal Cyber Intelligence Dashboard &nbsp;|&nbsp;
-  Powered by <strong>awesome-cybersecurity-feeds</strong> &nbsp;|&nbsp;
-  Page auto-refreshes every 5 minutes &nbsp;|&nbsp;
-  <a href="/api/data">JSON API</a>
+  <div class="foot">Internal circulation only · TLP:AMBER · Verify every item against its original source before circulating · Updated {{ updated }}</div>
 </div>
 
 <script>
-function filterSev(sev,btn){
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.article-card').forEach(c=>{
-    c.style.display=(sev==='all'||c.dataset.sev===sev)?'':'none';
+(function(){
+  function clock(){
+    var n=new Date();
+    var d=document.getElementById("date");
+    if(d) d.textContent=n.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · "+n.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    var e=document.getElementById("ed");
+    if(e){var s=new Date(n.getFullYear(),0,0);e.textContent=Math.floor((n-s)/864e5)}
+  }
+  clock();setInterval(clock,1000);
+
+  document.getElementById("theme").onclick=function(){
+    var r=document.documentElement,d=window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var cur=r.getAttribute("data-theme")||(d?"dark":"light");
+    r.setAttribute("data-theme",cur==="dark"?"light":"dark");
+  };
+  document.getElementById("print-btn").onclick=function(){window.print()};
+
+  var navBtns=document.querySelectorAll(".nav button");
+  navBtns.forEach(function(btn){
+    btn.onclick=function(){
+      navBtns.forEach(function(b){b.setAttribute("aria-pressed","false")});
+      btn.setAttribute("aria-pressed","true");
+      var sev=btn.getAttribute("data-sev");
+      filterBySev(sev);
+      var sel=document.getElementById("sev-sel");
+      if(sel) sel.value=sev==="all"?"":sev;
+    };
   });
-}
-function filterSearch(q){
-  q=q.toLowerCase();
-  document.querySelectorAll('.article-card').forEach(c=>{
-    c.style.display=c.dataset.title.includes(q)?'':'none';
-  });
-  if(q) document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-}
-setTimeout(()=>location.reload(),300000);
+
+  document.getElementById("sev-sel").onchange=function(){
+    var sev=this.value||"all";
+    filterBySev(sev);
+    navBtns.forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-sev")===sev?"true":"false")});
+  };
+
+  document.getElementById("q").oninput=function(){
+    var q=this.value.toLowerCase();
+    document.querySelectorAll("#main article").forEach(function(a){
+      a.style.display=(a.getAttribute("data-text")||"").includes(q)?"":"none";
+    });
+  };
+
+  function filterBySev(sev){
+    document.querySelectorAll("#main article").forEach(function(a){
+      a.style.display=(sev==="all"||a.getAttribute("data-sev")===sev)?"":"none";
+    });
+  }
+
+  setTimeout(function(){location.reload();},300000);
+})();
 </script>
 </body>
 </html>"""
@@ -484,5 +505,5 @@ if __name__ == "__main__":
     p.add_argument("--port", type=int, default=5000)
     p.add_argument("--debug", action="store_true")
     a = p.parse_args()
-    print(f"🛡️  Dashboard → http://{a.host}:{a.port}")
+    print(f"Dashboard -> http://{a.host}:{a.port}")
     app.run(host=a.host, port=a.port, debug=a.debug)

@@ -1,0 +1,22 @@
+services:
+  bulletin:
+    build: .
+    container_name: cyber-ledger
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:${PORT:-8080}"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - TZ=${TZ:-Asia/Kolkata}
+    volumes:
+      # Persist feed data and reports across rebuilds
+      - bulletin-data:/app/data
+      - bulletin-reports:/app/reports
+      - bulletin-logs:/app/logs
+
+volumes:
+  bulletin-data:
+  bulletin-reports:
+  bulletin-logs:

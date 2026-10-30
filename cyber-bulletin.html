@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Cyber Ledger — Internal Bulletin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbfaf7;--ink:#121212;--mute:#5a5a5a;--rule:#121212;--hair:#c9c6bd;--panel:#f1eee6;--red:#a4161a;--amber:#b86e00;--blue:#1d4e89;
+--blackletter:"UnifrakturMaguntia","Old English Text MT","Engravers Old English",Georgia,"Times New Roman",serif;
+--serif:"Times New Roman",Times,"Liberation Serif",Georgia,serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17160f;--ink:#efece2;--mute:#a9a597;--rule:#efece2;--hair:#3b3a30;--panel:#211f17;--red:#ff6b6b;--amber:#f0a73a;--blue:#7fb2f0}}
+:root[data-theme="dark"]{--bg:#17160f;--ink:#efece2;--mute:#a9a597;--rule:#efece2;--hair:#3b3a30;--panel:#211f17;--red:#ff6b6b;--amber:#f0a73a;--blue:#7fb2f0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 40px}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;padding:10px 0;border-bottom:1px solid var(--hair);color:var(--mute)}
+.top b{color:var(--ink)}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--red);font-weight:700;font-style:italic}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--red);animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}.tick span{animation:none!important}}
+.mast{text-align:center;padding:14px 0 8px;border-bottom:3px double var(--rule)}
+.mast h1{font-family:var(--blackletter);font-weight:400;font-size:clamp(44px,9vw,92px);line-height:1;margin:0;letter-spacing:.5px}
+.mast p{margin:6px 0 0;font-style:italic;color:var(--mute);font-size:15px}
+.nav{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 22px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.nav button{background:none;border:0;border-bottom:2px solid transparent;font:inherit;font-size:16px;color:var(--ink);padding:4px 2px;cursor:pointer}
+.nav button:hover{color:var(--red)}
+.nav button[aria-pressed="true"]{border-color:var(--ink);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tick{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--hair);padding:7px 0;overflow:hidden;font-size:15px}
+.tick .tag{flex:none;background:var(--red);color:#fff;font-weight:700;padding:1px 9px;font-style:italic}
+.tick .run{overflow:hidden;white-space:nowrap;flex:1}
+.tick span{display:inline-block;padding-left:100%;animation:run 60s linear infinite}
+@keyframes run{to{transform:translateX(-100%)}}
+.tools{display:flex;gap:10px;flex-wrap:wrap;padding:12px 0;align-items:center}
+.tools input[type=search]{flex:1;min-width:180px}
+input,select,textarea{font:inherit;font-size:16px;background:var(--bg);color:var(--ink);border:1px solid var(--rule);padding:6px 9px;border-radius:0}
+.btn{font:inherit;font-size:16px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:6px 14px;cursor:pointer}
+.btn.alt{background:none;color:var(--ink)}
+.paper{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1.15fr);gap:0 26px}
+.main{padding-right:26px;border-right:1px solid var(--hair)}
+.kick{font-size:13px;font-weight:700;color:var(--red);letter-spacing:.02em}
+.story h2,.story h3{margin:2px 0 6px;font-weight:700;line-height:1.12}
+.lead h2{font-size:clamp(30px,4.6vw,46px)}
+.story h3{font-size:24px}
+.meta{font-size:13px;color:var(--mute);font-style:italic;margin-bottom:6px}
+.story p{margin:0 0 8px}
+.why{font-size:16px;border-left:3px solid var(--rule);padding-left:10px;margin-top:8px}
+.sev{display:inline-block;font-size:12px;font-weight:700;padding:0 7px;border:1px solid currentColor;margin-left:6px;font-style:normal}
+.sev.critical{color:var(--red)}.sev.high{color:var(--amber)}.sev.medium{color:var(--blue)}
+.lead{padding:6px 0 18px;border-bottom:1px solid var(--rule);margin-bottom:16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.cols .story{padding:0 0 16px;margin-bottom:16px;border-bottom:1px solid var(--hair)}
+.cols .story:nth-child(odd){padding-right:0}
+.empty{padding:30px 0;color:var(--mute);font-style:italic}
+.thumb{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;filter:grayscale(1) contrast(1.08);background:var(--panel);border:1px solid var(--hair);margin:0 0 8px}
+.lead .thumb{aspect-ratio:16/8}
+aside h4{font-size:15px;margin:0 0 8px;padding-bottom:4px;border-bottom:2px solid var(--rule);font-weight:700}
+.box{margin-bottom:22px}
+.lvl{background:var(--panel);padding:12px;text-align:center}
+.lvl strong{display:block;font-size:30px;color:var(--amber);line-height:1.1}
+.bar{height:8px;background:linear-gradient(90deg,#3a7d44 0 25%,#d9b300 0 50%,var(--amber) 0 75%,var(--red) 0);margin:10px 0 4px;position:relative}
+.bar::after{content:"";position:absolute;left:62%;top:-4px;width:3px;height:16px;background:var(--ink)}
+.cve{width:100%;border-collapse:collapse;font-size:14px}
+.cve td,.cve th{padding:5px 3px;border-bottom:1px solid var(--hair);text-align:left;vertical-align:top}
+.cve th{font-size:12px;color:var(--mute)}
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}
+.nums div{background:var(--panel);padding:8px 4px}
+.nums b{display:block;font-size:28px;line-height:1}
+.nums small{font-size:12px;color:var(--mute)}
+.list{margin:0;padding-left:18px;font-size:16px}
+.list li{margin-bottom:6px}
+details.desk{border:1px solid var(--rule);padding:10px 14px;margin:14px 0;background:var(--panel)}
+details.desk summary{cursor:pointer;font-weight:700}
+.desk form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.desk label{display:flex;flex-direction:column;font-size:14px;gap:3px}
+.desk .full{grid-column:1/-1}
+.foot{border-top:3px double var(--rule);margin-top:20px;padding-top:10px;font-size:13px;color:var(--mute);text-align:center;font-style:italic}
+.samp{font-size:12px;background:var(--panel);padding:0 6px;margin-left:6px;font-style:normal;color:var(--mute)}
+@media (max-width:860px){.paper{grid-template-columns:1fr}.main{padding-right:0;border-right:0}.cols{grid-template-columns:1fr}.desk form{grid-template-columns:1fr}aside{margin-top:20px}}
+@media print{.tools,.desk,.tick,.nav button:not([aria-pressed="true"]){display:none}body{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span><b id="date">—</b></span>
+    <span class="live"><i></i>Live · updated <span id="upd">just now</span></span>
+    <span>Internal circulation · <b>TLP:AMBER</b> · Edition <span id="ed">1</span></span>
+  </div>
+
+  <header class="mast">
+    <h1>The Cyber Ledger</h1>
+    <p>“All the threats fit to print” — the company’s daily security bulletin</p>
+  </header>
+
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+
+  <div class="tick" aria-label="Latest headlines"><span class="tag">LATEST</span><div class="run"><span id="run"></span></div></div>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search today’s dispatches" aria-label="Search dispatches">
+    <select id="sev" aria-label="Filter by severity"><option value="">All severities</option><option>critical</option><option>high</option><option>medium</option></select>
+    <button class="btn alt" id="theme" type="button">Light / dark</button>
+    <button class="btn alt" id="print" type="button">Print briefing</button>
+  </div>
+
+  <details class="desk">
+    <summary>Intern desk: file a new dispatch</summary>
+    <form id="f">
+      <label class="full">Headline<input id="h" required maxlength="140"></label>
+      <label>Section<select id="c"></select></label>
+      <label>Severity<select id="s"><option>critical</option><option selected>high</option><option>medium</option></select></label>
+      <label class="full">Summary (what happened, in two or three sentences)<textarea id="b" rows="3" required maxlength="500"></textarea></label>
+      <label class="full">Why it matters to us<input id="w" maxlength="200"></label>
+      <label class="full">Cover image (optional, shown in black and white)<input id="img" type="file" accept="image/*"></label>
+      <label>Source name<input id="src" required maxlength="60"></label>
+      <label>Filed by<input id="by" required maxlength="40"></label>
+      <div class="full"><button class="btn" type="submit">Publish to bulletin</button> <button class="btn alt" type="button" id="clr">Remove my dispatches</button></div>
+    </form>
+  </details>
+
+  <div class="paper">
+    <main class="main" id="main" aria-live="polite"></main>
+    <aside>
+      <div class="box lvl"><h4>Threat level today</h4><strong>Elevated</strong><div class="bar"></div><small style="color:var(--mute)">Set by the duty analyst each morning</small></div>
+      <div class="box"><h4>CVE watch <span class="samp">sample</span></h4>
+        <table class="cve"><tr><th>ID</th><th>CVSS</th><th>Status</th></tr>
+          <tr><td>CVE-2026-XXXX1<br><small>VPN gateway RCE</small></td><td>9.8</td><td>Exploited</td></tr>
+          <tr><td>CVE-2026-XXXX2<br><small>Mail server auth bypass</small></td><td>8.8</td><td>PoC public</td></tr>
+          <tr><td>CVE-2026-XXXX3<br><small>CI runner privilege escalation</small></td><td>7.8</td><td>Patch ready</td></tr>
+        </table></div>
+      <div class="box"><h4>By the numbers</h4><div class="nums"><div><b id="n1">0</b><small>dispatches today</small></div><div><b id="n2">0</b><small>critical</small></div></div></div>
+      <div class="box"><h4>Actions for today</h4><ol class="list"><li>Confirm edge-device patch status with IT.</li><li>Forward phishing samples to the SOC mailbox.</li><li>Check client exposure to items marked critical.</li></ol></div>
+      <div class="box"><h4>Sources the desk monitors</h4><ul class="list"><li>CERT-In and CISA advisories</li><li>Vendor security bulletins</li><li>CISA KEV catalogue</li><li>Trusted security press</li></ul></div>
+    </aside>
+  </div>
+
+  <div class="foot">Entries marked “sample” are placeholders. Verify every item against its original source before circulating. Internal use only.</div>
+</div>
+
+<script>
+(function(){
+var CATS=["Breaches","Ransomware","Vulnerabilities","Threat actors","Advisories","Regulatory"];
+var T0=Date.now(), KEY="cyberledger:v1";
+var base=[
+{c:"Breaches",s:"critical",m:25,h:"Regional payments processor discloses unauthorised access to customer records",b:"The firm says an attacker used stolen vendor credentials to reach a database holding transaction metadata. Containment is under way and regulators have been notified. The scope of exposed records is still being assessed.",w:"Several of our BFSI clients use the same vendor chain, so credential hygiene for third-party access needs a check.",src:"Sample source",by:"Desk"},
+{c:"Ransomware",s:"high",m:70,h:"Healthcare group hit by double-extortion campaign as leak-site countdown begins",b:"Operators claim to have copied patient and finance files before encrypting servers. Initial access is reported to be through an unpatched remote-access service.",w:"Same entry route as recent campaigns: internet-facing remote access without MFA.",src:"Sample source",by:"Desk"},
+{c:"Vulnerabilities",s:"critical",m:110,h:"Critical remote-code-execution flaw in popular VPN gateway is under active exploitation",b:"A pre-authentication bug lets attackers run commands on the appliance. The vendor has shipped fixes and a temporary mitigation. CVE-2026-XXXX1 is expected on national exploited-vulnerability lists.",w:"Check whether any client or internal gateway runs the affected firmware.",src:"Sample source",by:"Desk"},
+{c:"Threat actors",s:"medium",m:190,h:"Phishing wave impersonating tax-portal notices targets finance teams",b:"Messages carry a PDF that links to a credential-harvesting page hosted on a legitimate file-sharing service, which helps it slip past filters.",w:"Worth a short reminder to finance and HR colleagues today.",src:"Sample source",by:"Desk"},
+{c:"Advisories",s:"high",m:260,h:"National CERT urges immediate patching of internet-facing network devices",b:"The advisory lists affected products, indicators of compromise and recommended log checks, and asks organisations to report suspected intrusions.",w:"Use it as the checklist for our own edge-device review.",src:"Sample source",by:"Desk"},
+{c:"Regulatory",s:"medium",m:340,h:"Regulator reminds regulated entities of incident-reporting timelines",b:"The circular restates the window for reporting cyber incidents and asks boards to review third-party risk arrangements.",w:"Expect client questions on reporting readiness this week.",src:"Sample source",by:"Desk"}
+];
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
+function save(a){try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}}
+var mine=load(), cat="All";
+function all(){return mine.map(function(x){x.mine=1;return x}).concat(base.map(function(x){return Object.assign({sample:1,t:T0-x.m*60000},x)})).sort(function(a,b){return b.t-a.t})}
+function ago(t){var m=Math.max(0,Math.round((Date.now()-t)/60000));if(m<1)return"just now";if(m<60)return m+" min ago";var h=Math.floor(m/60);return h+(h===1?" hour ago":" hours ago")}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function art(c){var i=Math.max(0,CATS.indexOf(c)),S=["<rect x='110' y='90' width='80' height='70' fill='#222'/><path d='M125 90V70a25 25 0 0 1 50 0v8' fill='none' stroke='#222' stroke-width='12'/><path d='M150 108l-8 18 14 4-8 20' stroke='#d8d5cc' stroke-width='5' fill='none'/>","<rect x='110' y='90' width='80' height='70' fill='#222'/><path d='M125 90V70a25 25 0 0 1 50 0v20' fill='none' stroke='#222' stroke-width='12'/><circle cx='150' cy='120' r='9' fill='#d8d5cc'/><rect x='146' y='120' width='8' height='22' fill='#d8d5cc'/>","<circle cx='150' cy='100' r='55' fill='none' stroke='#222' stroke-width='8'/><circle cx='150' cy='100' r='20' fill='#222'/><path d='M150 30v40M150 130v40M80 100h40M180 100h40' stroke='#222' stroke-width='8'/>","<path d='M150 40v90a30 30 0 1 1-30-30' fill='none' stroke='#222' stroke-width='10'/><circle cx='150' cy='38' r='9' fill='#222'/>","<path d='M150 45L225 165H75z' fill='#222'/><rect x='146' y='90' width='8' height='40' fill='#d8d5cc'/><circle cx='150' cy='147' r='5' fill='#d8d5cc'/>","<path d='M80 85L150 45L220 85z' fill='#222'/><rect x='95' y='95' width='18' height='55' fill='#222'/><rect x='141' y='95' width='18' height='55' fill='#222'/><rect x='187' y='95' width='18' height='55' fill='#222'/><rect x='80' y='155' width='140' height='12' fill='#222'/>"];
+ var svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200'><defs><pattern id='d' width='8' height='8' patternUnits='userSpaceOnUse'><circle cx='4' cy='4' r='1.4' fill='#222' opacity='.28'/></pattern></defs><rect width='300' height='200' fill='#d8d5cc'/>"+S[i]+"<rect width='300' height='200' fill='url(#d)'/></svg>";
+ return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)}
+function story(x,lead){
+ var d=el("article","story"+(lead?" lead":""));
+ var k=el("div","kick",x.c);var sv=el("span","sev "+x.s,x.s.toUpperCase());k.appendChild(sv);
+ if(x.sample)k.appendChild(el("span","samp","sample"));
+ d.appendChild(k);d.appendChild(el(lead?"h2":"h3",null,x.h));
+ d.appendChild(el("div","meta","Filed by "+x.by+" · "+ago(x.t)+" · Source: "+x.src));
+ var im=el("img","thumb");im.src=x.img||art(x.c);im.alt=x.img?"Cover image for: "+x.h:"";im.loading="lazy";d.appendChild(im);d.appendChild(el("p",null,x.b));
+ if(x.w){var w=el("div","why");var s=el("b",null,"Why it matters: ");w.appendChild(s);w.appendChild(document.createTextNode(x.w));d.appendChild(w)}
+ return d}
+function render(){
+ var q=document.getElementById("q").value.toLowerCase(),sv=document.getElementById("sev").value;
+ var list=all().filter(function(x){return (cat==="All"||x.c===cat)&&(!sv||x.s===sv)&&(!q||(x.h+x.b+x.src).toLowerCase().indexOf(q)>-1)});
+ var m=document.getElementById("main");m.textContent="";
+ if(!list.length){m.appendChild(el("div","empty","No dispatches match this view. Clear the search or choose another section."))}
+ else{m.appendChild(story(list[0],true));var g=el("div","cols");list.slice(1).forEach(function(x){g.appendChild(story(x))});m.appendChild(g)}
+ var a=all();document.getElementById("n1").textContent=a.length;document.getElementById("n2").textContent=a.filter(function(x){return x.s==="critical"}).length;
+ document.getElementById("run").textContent=a.slice(0,5).map(function(x){return x.h}).join("   ◆   ");
+ document.getElementById("upd").textContent=ago(a[0]?a[0].t:T0)}
+var nav=document.getElementById("nav"),cs=document.getElementById("c");
+["All"].concat(CATS).forEach(function(n){var b=el("button",null,n);b.type="button";b.setAttribute("aria-pressed",n===cat);b.onclick=function(){cat=n;Array.prototype.forEach.call(nav.children,function(c){c.setAttribute("aria-pressed",c===b)});render()};nav.appendChild(b)});
+CATS.forEach(function(n){cs.appendChild(new Option(n,n))});
+document.getElementById("q").oninput=render;document.getElementById("sev").onchange=render;
+function shrink(file,cb){if(!file){cb("");return}var r=new FileReader();r.onload=function(){var m=new Image();m.onload=function(){var w=Math.min(640,m.width),h=Math.round(m.height*w/m.width),cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(m,0,0,w,h);cb(cv.toDataURL("image/jpeg",.72))};m.onerror=function(){cb("")};m.src=r.result};r.onerror=function(){cb("")};r.readAsDataURL(file)}
+document.getElementById("f").onsubmit=function(e){e.preventDefault();var form=e.target;shrink(document.getElementById("img").files[0],function(img){
+ mine.push({c:cs.value,s:document.getElementById("s").value,h:document.getElementById("h").value.trim(),b:document.getElementById("b").value.trim(),w:document.getElementById("w").value.trim(),src:document.getElementById("src").value.trim(),by:document.getElementById("by").value.trim(),t:Date.now(),img:img});
+ save(mine);form.reset();render();window.scrollTo({top:0,behavior:"smooth"})})};
+document.getElementById("clr").onclick=function(){mine=[];save(mine);render()};
+document.getElementById("print").onclick=function(){window.print()};
+document.getElementById("theme").onclick=function(){var r=document.documentElement,d=window.matchMedia("(prefers-color-scheme: dark)").matches;var cur=r.getAttribute("data-theme")||(d?"dark":"light");r.setAttribute("data-theme",cur==="dark"?"light":"dark")};
+function clock(){var n=new Date();document.getElementById("date").textContent=n.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · "+n.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ var s=new Date(n.getFullYear(),0,0);document.getElementById("ed").textContent=Math.floor((n-s)/864e5)}
+clock();setInterval(clock,1000);render();setInterval(render,30000);
+})();
+</script>
+</body>
+</html>

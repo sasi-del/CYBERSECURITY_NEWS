@@ -107,35 +107,12 @@ def cluster_articles(articles, top_n=10):
 
 
 # ---------------------------------------------------------------------------
-# Gemini AI Summary (optional)
+# AI Summary (optional) — supports Gemini and OpenRouter
 # ---------------------------------------------------------------------------
-def generate_ai_summary(top_items):
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        print("ℹ️  GEMINI_API_KEY not set — skipping AI summary.")
-        return None
-
-    try:
-        from google import genai
-    except ImportError:
-        print("ℹ️  google-genai not installed — skipping AI summary.")
-        print("    pip install -U google-genai")
-        return None
-
-    headlines = []
-    for i, item in enumerate(top_items, 1):
-        title = item["article"].get("title", "")
-        sev   = item["severity"].upper()
-        count = item["count"]
-        line  = f"{i}. [{sev}] {title}"
-        if count > 1:
-            line += f" (+ {count - 1} related advisories)"
-        headlines.append(line)
-
-    prompt = f"""You are a cybersecurity analyst writing a 5-line executive summary 
+SUMMARY_PROMPT = """You are a cybersecurity analyst writing a 5-line executive summary \
 for non-technical management. Today's top security headlines are:
 
-{chr(10).join(headlines)}
+{headlines}
 
 Write a concise, plain-English summary (5 sentences max) that:
 1. Identifies the most critical risk today
@@ -145,16 +122,107 @@ Write a concise, plain-English summary (5 sentences max) that:
 
 Keep it punchy — this is read at the morning standup."""
 
+
+def _build_prompt(top_items):
+    lines = []
+    for i, item in enumerate(top_items, 1):
+        title = item["article"].get("title", "")
+        sev   = item["severity"].upper()
+        count = item["count"]
+        line  = f"{i}. [{sev}] {title}"
+        if count > 1:
+            line += f" (+ {count - 1} related advisories)"
+        lines.append(line)
+    return SUMMARY_PROMPT.format(headlines="\n".join(lines))
+
+
+def _detect_provider():
+    provider = os.environ.get("AI_PROVIDER", "").lower().strip()
+    if provider == "openrouter":
+        return "openrouter"
+    if provider == "gemini":
+        return "gemini"
+    if os.environ.get("OPENROUTER_API_KEY"):
+        return "openrouter"
+    if os.environ.get("GEMINI_API_KEY"):
+        return "gemini"
+    return None
+
+
+def _summary_via_gemini(prompt):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        print("GEMINI_API_KEY not set.")
+        return None
     try:
-        client = genai.Client(api_key=api_key)
-        interaction = client.interactions.create(
-            model="gemini-3.8-flash",
-            input=prompt,
-            store=False,
-        )
-        return interaction.output_text.strip()
+        from google import genai
+    except ImportError:
+        print("google-genai not installed — pip install -U google-genai")
+        return None
+    client = genai.Client(api_key=api_key)
+    interaction = client.interactions.create(
+        model="gemini-3.8-flash",
+        input=prompt,
+        store=False,
+    )
+    return interaction.output_text.strip()
+
+
+def _summary_via_openrouter(prompt):
+    import requests as _req
+
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        print("OPENROUTER_API_KEY not set.")
+        return None
+    model = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+    resp = _req.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.4,
+            "max_tokens": 512,
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    if data.get("error"):
+        print(f"OpenRouter error: {data['error']}")
+        return None
+    choices = data.get("choices") or []
+    if not choices:
+        print(f"OpenRouter returned no choices. Response: {json.dumps(data, indent=2)[:500]}")
+        return None
+    content = (choices[0].get("message") or {}).get("content")
+    if not content:
+        print(f"OpenRouter returned empty content. Response: {json.dumps(data, indent=2)[:500]}")
+        return None
+    return content.strip()
+
+
+def generate_ai_summary(top_items):
+    provider = _detect_provider()
+    if provider is None:
+        print("No AI provider configured — skipping AI summary.")
+        print("  Set GEMINI_API_KEY or OPENROUTER_API_KEY in your environment.")
+        return None
+
+    prompt = _build_prompt(top_items)
+    try:
+        if provider == "openrouter":
+            print(f"Using OpenRouter (model: {os.environ.get('OPENROUTER_MODEL', 'google/gemini-2.5-flash')})")
+            return _summary_via_openrouter(prompt)
+        else:
+            print("Using Gemini")
+            return _summary_via_gemini(prompt)
     except Exception as e:
-        print(f"⚠️  Gemini API error: {e}")
+        print(f"AI summary error ({provider}): {e}")
         return None
 
 
